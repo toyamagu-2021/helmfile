@@ -260,6 +260,7 @@ type WriteValuesConfigProvider interface {
 	OutputFileTemplate() string
 	SkipDeps() bool
 	SkipRefresh() bool
+	SkipSecrets() bool
 	SkipCleanup() bool
 	IncludeTransitiveNeeds() bool
 

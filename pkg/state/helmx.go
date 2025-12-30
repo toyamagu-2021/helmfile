@@ -299,7 +299,7 @@ func (st *HelmState) goGetterChart(chart, dir, cacheDir string, force bool) (str
 	return chart, nil
 }
 
-func (st *HelmState) PrepareChartify(helm helmexec.Interface, release *ReleaseSpec, chart string, workerIndex int) (*Chartify, func(), error) {
+func (st *HelmState) PrepareChartify(helm helmexec.Interface, release *ReleaseSpec, chart string, workerIndex int, skipSecrets bool) (*Chartify, func(), error) {
 	c := &Chartify{
 		Opts: &chartify.ChartifyOpts{
 			WorkaroundOutputDirIssue:    true,
@@ -402,7 +402,7 @@ func (st *HelmState) PrepareChartify(helm helmexec.Interface, release *ReleaseSp
 
 	if shouldRun {
 		st.logger.Debugf("Chartify process for %s", dir)
-		generatedFiles, err := st.generateValuesFiles(helm, release, workerIndex, false)
+		generatedFiles, err := st.generateValuesFiles(helm, release, workerIndex, skipSecrets)
 		if err != nil {
 			return nil, clean, err
 		}

@@ -1276,6 +1276,7 @@ type ChartPrepareOptions struct {
 	SkipRefresh   bool
 	SkipResolve   bool
 	SkipCleanup   bool
+	SkipSecrets   bool
 	// Validate configures chartify to pass --validate to helm-template run by it.
 	// It's required when one of your chart relies on Capabilities.APIVersions in a template
 	Validate               bool
@@ -1646,7 +1647,7 @@ func (st *HelmState) prepareChartForRelease(release *ReleaseSpec, helm helmexec.
 
 	isLocal := st.fs.DirectoryExistsAt(normalizeChart(st.basePath, chartName))
 
-	chartification, clean, err := st.PrepareChartify(helm, release, chartPath, workerIndex)
+	chartification, clean, err := st.PrepareChartify(helm, release, chartPath, workerIndex, opts.SkipSecrets)
 
 	if !opts.SkipCleanup {
 		// nolint: staticcheck

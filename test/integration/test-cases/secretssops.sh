@@ -86,3 +86,24 @@ for i in $(seq 10); do
 done
 
 test_pass "secretssops.4"
+
+test_start "secretssops.5 - should skip secrets with --skip-secrets in chartify path (dependencies)"
+
+chartify_config_file="secretssops-chartify.yaml.gotmpl"
+chartify_skip_secrets_tmp=$(mktemp -d)
+chartify_skip_secrets_output=${chartify_skip_secrets_tmp}/chartify-skip-secrets.template.yaml
+
+info "Testing template with --skip-secrets flag using chartify path (dependencies trigger chartify)"
+${helmfile} -f ${secretssops_case_input_dir}/${chartify_config_file} -e direct --skip-secrets template --skip-deps > ${chartify_skip_secrets_output} || fail "\"helmfile template --skip-secrets\" with chartify should succeed without secrets plugin"
+
+info "Verifying encrypted values are preserved (not decrypted) in chartify template output"
+grep -q "ENC\[AES256_GCM" ${chartify_skip_secrets_output} || fail "Chartify template output should contain encrypted values (ENC[AES256_GCM) when --skip-secrets is used"
+
+info "Verifying environment secrets are also preserved when --skip-secrets is used"
+# Environment secrets (key_1: value_1, key_2: value_2) should show encrypted or placeholder values, not decrypted values
+# When --skip-secrets is used, the encrypted SOPS format should remain, not the decrypted "value_1" or "value_2"
+if grep -q "key_1: value_1" ${chartify_skip_secrets_output} || grep -q "key_2: value_2" ${chartify_skip_secrets_output}; then
+    fail "Chartify template output should NOT contain decrypted environment secret values when --skip-secrets is used"
+fi
+
+test_pass "secretssops.5"
